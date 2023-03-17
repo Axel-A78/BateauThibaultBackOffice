@@ -127,3 +127,22 @@ STATIC_URL = '/static/'
 CORS_ORIGIN_ALLOW_ALL=True
 CORS_ALLOW_CREDENTIALS= True
 CORS_ALLOW_ALL_ORIGINS = True
+
+###
+
+#######################
+#...TME3 JWT starts...#
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+}
+
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=5),
+}
+#...end of TME3 JWT...#
+#######################

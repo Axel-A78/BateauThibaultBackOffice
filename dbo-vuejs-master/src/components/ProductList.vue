@@ -1,105 +1,79 @@
 <template>
-  <div class="home">
-    <header>
-      <h1>Le poisson de Thibault</h1>
-    </header>
-    <main>
-      Le projet fonctionne
-      <div>{{ products.length }} products</div>
-      <div class="product-grid">
-        <div class="product-card" v-for="product in products" :key="product.id">
-          <div class="product-name">{{ product.name }}</div>
-          <div class="product-price">{{ product.price }}€</div>
-        </div>
-      </div>
-    </main>
+  <div>
+    <h1>Liste des produits</h1>
+    <ul class="productGrid">
+      <li v-for="product in products" :key="product.id">
+        <Card class="cardProduct" style="width: 25em">
+          <template #header>
+            <img alt="user header" src="/images/usercard.png" />
+          </template>
+          <template #title> {{ product.name }} </template>
+          <template #subtitle> {{ product.price }} € </template>
+          <template #content>
+            <p>
+              {{ product.description }}
+            </p>
+          </template>
+          <template #footer>
+            <Button icon="pi pi-shopping-cart" rounded />
+          </template>
+        </Card>
+      </li>
+    </ul>
   </div>
 </template>
 
 <script>
-import { defineComponent, ref } from "vue";
+import store from "../store";
+import Card from "primevue/card";
 
-export default defineComponent({
+export default {
   name: "ProductList",
-  setup() {
-    const products = ref([]);
-
-    const getproducts = () => {
-      return new Promise((resolve, reject) => {
-        fetch("http://127.0.0.1:8000/products/")
-          .then((response) => {
-            if (response.ok) {
-              resolve(response.json());
-            } else {
-              reject(new Error("Failed to fetch products"));
-            }
-          })
-          .catch((error) => {
-            reject(error);
-          });
-      });
-    };
-
-    getproducts().then((data) => {
-      products.value = data;
-    });
-
-    return {
-      products,
-    };
+  components: {
+    Card,
   },
-});
+  computed: {
+    products() {
+      return store.getters.getProducts;
+    },
+  },
+  mounted() {
+    store.dispatch("fetchProducts");
+  },
+};
 </script>
 
 <style>
-.home {
-  background: #fafafa;
-}
-header {
-  top: 0;
-  position: sticky;
-  min-height: 120px;
-  background: #150f26;
-}
-h1 {
-  margin: 0;
-  font-size: 36px;
-  color: white;
-  padding: 24px;
-}
-main {
-  overflow-y: hidden;
-  font-size: 36px;
+html {
+  font-size: 14px;
 }
 
-.product-grid {
+body {
+  font-family: var(--font-family);
+  font-weight: normal;
+  background: var(--surface-ground);
+  color: var(--text-color);
+  padding: 1rem;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.cardProduct {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  grid-gap: 20px;
-  justify-items: center;
-  align-items: center;
+  grid-template-columns: repeat(3, 1fr);
+  grid-gap: 1rem;
+  background: var(--surface-card);
+  padding: 2rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
 }
 
-.product-card {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 300px;
-  height: 150px;
-  background: #5b686a;
-  border: 2px solid navy;
-  border-radius: 8px;
-  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.product-name {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 8px;
-}
-
-.product-price {
-  font-size: 18px;
+.productGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-gap: 1rem;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
 }
 </style>
