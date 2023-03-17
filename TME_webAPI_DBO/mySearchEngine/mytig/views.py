@@ -8,6 +8,11 @@ from rest_framework import status
 from django.http import Http404
 from rest_framework_simplejwt.tokens import AccessToken
 from django.contrib.auth.models import User
+from rest_framework.permissions import IsAuthenticated
+
+# Ajoutez ces imports si nécessaire
+from django.core.exceptions import ValidationError
+from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 
 ##response = requests.post('http://127.0.0.1:8000/api/token/', data={'username': 'eric', 'password': 'eric123'})
 ##token = response.json()['access']
@@ -120,6 +125,68 @@ class UpdateProductSalePercentage(APIView):
             return Response(jsondata, status=status.HTTP_200_OK)
         except:
             raise Http404
+class ProductsByCategory(APIView):
+
+    def get(self, request, category, format=None):
+        if category not in ["0", "1", "2"]:
+            return Response({"error": "Invalid category"}, status=status.HTTP_400_BAD_REQUEST)
+
+        products = InfoProduct.objects.filter(category=category)
+        serializer = InfoProductSerializer(products, many=True)
+        return Response(serializer.data)
+class UpdateMultipleProductStocks(APIView):
+    def put(self, request, format=None):
+        products_data = request.data
+
+        for product_data in products_data:
+            product_id = product_data.get('id')
+            change = product_data.get('change')
+
+            if product_id is None or change is None:
+                return Response({"error": "Invalid product data"}, status=HTTP_400_BAD_REQUEST)
+
+            try:
+                product = InfoProduct.objects.get(pk=product_id)
+                new_stock = product.stock + int(change)
+
+                if new_stock >= 0:
+                    product.stock = new_stock
+                    product.save()
+                else:
+                    return Response({'error': f'Invalid stock change for product {product_id}'}, status=HTTP_400_BAD_REQUEST)
+
+            except InfoProduct.DoesNotExist:
+                return Response({"error": f"Product {product_id} not found"}, status=HTTP_400_BAD_REQUEST)
+
+        return Response({"status": "Stocks updated successfully"}, status=HTTP_200_OK)
+
+class UpdateMultipleProductPromotions(APIView):
+
+    def put(self, request, format=None):
+        products_data = request.data
+
+        for product_data in products_data:
+            product_id = product_data.get('id')
+            sale_percentage = product_data.get('sale_percentage')
+
+            if product_id is None or sale_percentage is None:
+                return Response({"error": "Invalid product data"}, status=HTTP_400_BAD_REQUEST)
+
+            try:
+                product = InfoProduct.objects.get(pk=product_id)
+
+                if 0 <= float(sale_percentage) <= 100:
+                    product.sale_percentage = float(sale_percentage)
+                    product.price_on_sale = product.price * (1 - float(sale_percentage) / 100)
+                    product.save()
+                else:
+                    return Response({'error': f'Invalid sale percentage for product {product_id}'}, status=HTTP_400_BAD_REQUEST)
+
+            except InfoProduct.DoesNotExist:
+                return Response({"error": f"Product {product_id} not found"}, status=HTTP_400_BAD_REQUEST)
+
+        return Response({"status": "Promotions updated successfully"}, status=HTTP_200_OK)
+
 
 from mytig.models import ProduitEnPromotion, AvailableProduct
 from mytig.serializers import ProduitEnPromotionSerializer, AvailableProductSerializer
