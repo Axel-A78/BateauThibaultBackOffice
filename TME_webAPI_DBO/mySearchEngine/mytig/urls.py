@@ -16,5 +16,6 @@ urlpatterns = [
     path('infoproducts/', views.InfoProductList.as_view()),
     path('infoproduct/<int:tig_id>/', views.InfoProductDetail.as_view()),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('product/update-stock/<int:pk>/', views.UpdateProductStock.as_view()),
+    path('update_stock/<int:pk>/', views.UpdateProductStock.as_view(), name='update_product_stock'),
+    path('update_sale_percentage/<int:pk>/', views.UpdateProductSalePercentage.as_view(), name='update_product_sale_percentage'),
 ]

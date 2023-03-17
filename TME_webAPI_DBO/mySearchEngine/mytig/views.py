@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from mytig.config import baseUrl
 from mytig.models import InfoProduct
 from mytig.serializers import InfoProductSerializer
+from rest_framework import status
+from django.http import Http404
 from rest_framework_simplejwt.tokens import AccessToken
 from django.contrib.auth.models import User
 
@@ -74,6 +76,45 @@ class UpdateProductStock(APIView):
     def put(self, request, pk, format=None):
         try:
             product_data = request.data
+            change = product_data.get('change')
+
+            if change is not None:
+                # Récupérez les données du produit à partir de l'API externe
+                response = requests.get(baseUrl + f'product/{pk}/')
+                product = response.json()
+
+                # Mettez à jour le stock en fonction de la valeur de "change"
+                new_stock = product['stock'] + int(change)
+                if new_stock >= 0:
+                    product_data['stock'] = new_stock
+                else:
+                    return Response({'error': 'Invalid stock change'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Mettez à jour les données du produit
+            response = requests.put(baseUrl + f'product/{pk}/', json=product_data)
+            jsondata = response.json()
+            return Response(jsondata, status=status.HTTP_200_OK)
+        except:
+            raise Http404
+class UpdateProductSalePercentage(APIView):
+    def put(self, request, pk, format=None):
+        try:
+            product_data = request.data
+            sale_percentage = product_data.get('sale_percentage')
+
+            if sale_percentage is not None:
+                # Récupérez les données du produit à partir de l'API externe
+                response = requests.get(baseUrl + f'product/{pk}/')
+                product = response.json()
+
+                # Mettez à jour le prix en promotion en fonction du pourcentage de promotion
+                if 0 <= float(sale_percentage) <= 100:
+                    new_price_on_sale = product['price'] * (1 - float(sale_percentage) / 100)
+                    product_data['price_on_sale'] = new_price_on_sale
+                else:
+                    return Response({'error': 'Invalid sale percentage'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Mettez à jour les données du produit
             response = requests.put(baseUrl + f'product/{pk}/', json=product_data)
             jsondata = response.json()
             return Response(jsondata, status=status.HTTP_200_OK)
