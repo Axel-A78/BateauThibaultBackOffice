@@ -28,7 +28,6 @@ deactivate () {
     fi
 
     unset VIRTUAL_ENV
-    unset VIRTUAL_ENV_PROMPT
     if [ ! "${1:-}" = "nondestructive" ] ; then
     # Self destruct!
         unset -f deactivate
@@ -38,7 +37,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="C:\Users\achya\Desktop\Projets\CFA\ATIR\Back_Office\TME_webAPI_DBO\myTidyVEnv"
+VIRTUAL_ENV="D:\Khalil\CFA INSTA BAC+4\Backoffice\Projet\BateauThibaultBackOffice\TME_webAPI_DBO\myTidyVEnv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
@@ -57,8 +56,6 @@ if [ -z "${VIRTUAL_ENV_DISABLE_PROMPT:-}" ] ; then
     _OLD_VIRTUAL_PS1="${PS1:-}"
     PS1="(myTidyVEnv) ${PS1:-}"
     export PS1
-    VIRTUAL_ENV_PROMPT="(myTidyVEnv) "
-    export VIRTUAL_ENV_PROMPT
 fi
 
 # This should detect bash and zsh, which have a hash command that must

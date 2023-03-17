@@ -70,6 +70,15 @@ class RedirectionShipPointDetails(APIView):
             return Response(jsondata)
         except:
             raise Http404
+class UpdateProductStock(APIView):
+    def put(self, request, pk, format=None):
+        try:
+            product_data = request.data
+            response = requests.put(baseUrl + f'product/{pk}/', json=product_data)
+            jsondata = response.json()
+            return Response(jsondata, status=status.HTTP_200_OK)
+        except:
+            raise Http404
 
 from mytig.models import ProduitEnPromotion, AvailableProduct
 from mytig.serializers import ProduitEnPromotionSerializer, AvailableProductSerializer
