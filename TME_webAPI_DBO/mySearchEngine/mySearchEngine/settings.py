@@ -25,7 +25,7 @@ SECRET_KEY = 'f%t0&fy4df2@#z@@&2g&rcu=@g27=h90=zr#hwyxz5w*3s)w9i'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'kubernetes.docker.internal']
 
 
 
@@ -141,7 +141,7 @@ REST_FRAMEWORK = {
 from datetime import timedelta
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(minutes=5),
 }
 #...end of TME3 JWT...#

@@ -9,9 +9,11 @@ from django.http import Http404
 from rest_framework_simplejwt.tokens import AccessToken
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated
-
+from django.core.exceptions import ObjectDoesNotExist
 # Ajoutez ces imports si nécessaire
 from django.core.exceptions import ValidationError
+from .models import InfoProduct
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 
 ##response = requests.post('http://127.0.0.1:8000/api/token/', data={'username': 'eric', 'password': 'eric123'})
@@ -78,29 +80,36 @@ class RedirectionShipPointDetails(APIView):
         except:
             raise Http404
 class UpdateProductStock(APIView):
+    permission_classes = (IsAuthenticated,)
     def put(self, request, pk, format=None):
         try:
             product_data = request.data
-            change = product_data.get('change')
+            quantity = product_data.get('quantityInStock')
 
-            if change is not None:
-                # Récupérez les données du produit à partir de l'API externe
-                response = requests.get(baseUrl + f'product/{pk}/')
-                product = response.json()
+            if quantity is not None:
+                # Récupérez les données du produit à partir de votre modèle InfoProduct
+                try:
+                    product = InfoProduct.objects.get(pk=pk)
+                    print(product)
+                except ObjectDoesNotExist:
+                    raise Http404
 
-                # Mettez à jour le stock en fonction de la valeur de "change"
-                new_stock = product['stock'] + int(change)
+                # Mettez à jour le stock en fonction de la valeur de "quantityInStock"
+                new_stock = product.quantityInStock + int(quantity)
                 if new_stock >= 0:
-                    product_data['stock'] = new_stock
+                    product.quantityInStock = new_stock
+                    product.save()
                 else:
                     return Response({'error': 'Invalid stock change'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Mettez à jour les données du produit
-            response = requests.put(baseUrl + f'product/{pk}/', json=product_data)
-            jsondata = response.json()
-            return Response(jsondata, status=status.HTTP_200_OK)
+            # Serialize product data for response
+            from .serializers import InfoProductSerializer
+            serializer = InfoProductSerializer(product)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except:
             raise Http404
+
 class UpdateProductSalePercentage(APIView):
     def put(self, request, pk, format=None):
         try:
