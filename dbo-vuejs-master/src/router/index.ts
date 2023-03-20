@@ -3,6 +3,7 @@ import HomeView from "../views/HomeView.vue";
 import ProductDetail from "../views/ProductDetail.vue";
 import LoginView from "../views/LoginView.vue";
 import TestView from "../views/TestView.vue";
+import { loggedIn } from "@/utils/auth";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -43,20 +44,22 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   // Vérifiez si la route nécessite une authentification
   if (to.matched.some((record) => record.meta.requiresAuth)) {
-    // Vérifiez si l'utilisateur a un jeton d'accès valide
-    const token = localStorage.getItem("token");
-    if (!token) {
-      // Si l'utilisateur n'a pas de jeton, redirigez-le vers la page de connexion
+    // Vérifiez si l'utilisateur est connecté
+    if (!loggedIn()) {
+      // Si l'utilisateur n'est pas connecté, redirigez-le vers la page de connexion
+      console.log("User n'est pas connecté. Redirection à la page login.");
       next({
         path: "/login",
         query: { redirect: to.fullPath },
       });
     } else {
-      // Si l'utilisateur a un jeton, laissez-le accéder à la route
+      // Si l'utilisateur est connecté, laissez-le accéder à la route
+      console.log("User est connecté. Accès autorisé.");
       next();
     }
   } else {
     // Si la route n'a pas besoin d'authentification, laissez l'utilisateur y accéder
+    console.log("Authentification non requise. Accès autorisé.");
     next();
   }
 });

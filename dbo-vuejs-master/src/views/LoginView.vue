@@ -31,9 +31,7 @@
             />
           </div>
           <div>
-            <button label="Link" class="p-button p-col-5" @click="clear">
-              Effacer
-            </button>
+            <Button label="Effacer" @click="clear" text raised />
           </div>
         </div>
       </div>
@@ -51,9 +49,11 @@ export default {
   },
   methods: {
     login() {
+      const token = localStorage.getItem("token");
       const requestOptions = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        Authorization: `Bearer ${token}`,
         body: JSON.stringify({
           username: this.username,
           password: this.password,
@@ -69,9 +69,8 @@ export default {
         .then((data) => {
           // Stocker le jeton d'authentification dans le local storage pour une utilisation ultérieure
           localStorage.setItem("token", data.access_token);
-
           // Rediriger l'utilisateur vers la page d'accueil ou une autre page protégée
-          this.$router.push("/test");
+          this.$router.replace(this.$route.query.redirect || "/test");
         })
         .catch((error) => {
           console.log(error);
