@@ -49,11 +49,12 @@ export default {
   },
   methods: {
     login() {
-      const token = localStorage.getItem("token");
+      // const token = localStorage.getItem("token");
       const requestOptions = {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        Authorization: `Bearer ${token}`,
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           username: this.username,
           password: this.password,
@@ -68,7 +69,7 @@ export default {
         })
         .then((data) => {
           // Stocker le jeton d'authentification dans le local storage pour une utilisation ultérieure
-          localStorage.setItem("token", data.access_token);
+          localStorage.setItem("token", data.access);
           // Rediriger l'utilisateur vers la page d'accueil ou une autre page protégée
           this.$router.replace(this.$route.query.redirect || "/test");
         })

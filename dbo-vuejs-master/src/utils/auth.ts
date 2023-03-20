@@ -1,5 +1,5 @@
 export function loggedIn(): boolean {
-  const accessToken = localStorage.getItem("access_token");
+  const accessToken = localStorage.getItem("token");
   if (accessToken) {
     // Si un jeton d'accès est présent dans le local storage, vérifiez s'il est expiré
     const { exp } = JSON.parse(atob(accessToken.split(".")[1]));
