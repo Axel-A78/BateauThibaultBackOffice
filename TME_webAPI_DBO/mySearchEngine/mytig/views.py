@@ -53,9 +53,9 @@ class RedirectionListeDeProduits(APIView):
 #        NO DEFITION of post --> server will return "405 NOT ALLOWED"
 
 class RedirectionDetailProduit(APIView):
-    def get(self, request, pk, format=None):
+    def get(self, request, tig_id, format=None):
         try:
-            response = requests.get(baseUrl+'product/'+str(pk)+'/')
+            response = requests.get(baseUrl+'product/'+str(tig_id)+'/')
             jsondata = response.json()
             return Response(jsondata)
         except:
@@ -72,53 +72,37 @@ class RedirectionShipPoints(APIView):
         return Response(jsondata)
 
 class RedirectionShipPointDetails(APIView):
-    def get(self, request, pk, format=None):
+    def get(self, request, tig_id, format=None):
         try:
-            response = requests.get(baseUrl+'shipPoint/'+str(pk)+'/')
+            response = requests.get(baseUrl+'shipPoint/'+str(tig_id)+'/')
             jsondata = response.json()
             return Response(jsondata)
         except:
             raise Http404
 class UpdateProductStock(APIView):
     permission_classes = (IsAuthenticated,)
-    def put(self, request, pk, format=None):
+    def get_object(self, tig_id):
         try:
-            product_data = request.data
-            quantity = product_data.get('quantityInStock')
-
-            if quantity is not None:
-                # Récupérez les données du produit à partir de votre modèle InfoProduct
-                try:
-                    product = InfoProduct.objects.get(pk=pk)
-                    print(product)
-                except ObjectDoesNotExist:
-                    raise Http404
-
-                # Mettez à jour le stock en fonction de la valeur de "quantityInStock"
-                new_stock = product.quantityInStock + int(quantity)
-                if new_stock >= 0:
-                    product.quantityInStock = new_stock
-                    product.save()
-                else:
-                    return Response({'error': 'Invalid stock change'}, status=status.HTTP_400_BAD_REQUEST)
-
-            # Serialize product data for response
-            from .serializers import InfoProductSerializer
-            serializer = InfoProductSerializer(product)
-
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except:
+            return InfoProduct.objects.get(id=tig_id)
+        except InfoProduct.DoesNotExist:
             raise Http404
 
+    def patch(self, request, tig_id):
+        product = self.get_object(tig_id)
+        product.unit = request.data.get('unit', product.unit)
+        product.save()
+        serializer = InfoProductSerializer(product)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 class UpdateProductSalePercentage(APIView):
-    def put(self, request, pk, format=None):
+    def put(self, request, tig_id, format=None):
         try:
             product_data = request.data
             sale_percentage = product_data.get('sale_percentage')
 
             if sale_percentage is not None:
                 # Récupérez les données du produit à partir de l'API externe
-                response = requests.get(baseUrl + f'product/{pk}/')
+                response = requests.get(baseUrl + f'product/{tig_id}/')
                 product = response.json()
 
                 # Mettez à jour le prix en promotion en fonction du pourcentage de promotion
@@ -129,7 +113,7 @@ class UpdateProductSalePercentage(APIView):
                     return Response({'error': 'Invalid sale percentage'}, status=status.HTTP_400_BAD_REQUEST)
 
             # Mettez à jour les données du produit
-            response = requests.put(baseUrl + f'product/{pk}/', json=product_data)
+            response = requests.put(baseUrl + f'product/{tig_id}/', json=product_data)
             jsondata = response.json()
             return Response(jsondata, status=status.HTTP_200_OK)
         except:
@@ -155,7 +139,7 @@ class UpdateMultipleProductStocks(APIView):
                 return Response({"error": "Invalid product data"}, status=HTTP_400_BAD_REQUEST)
 
             try:
-                product = InfoProduct.objects.get(pk=product_id)
+                product = InfoProduct.objects.get(tig_id=product_id)
                 new_stock = product.stock + int(change)
 
                 if new_stock >= 0:
@@ -182,7 +166,7 @@ class UpdateMultipleProductPromotions(APIView):
                 return Response({"error": "Invalid product data"}, status=HTTP_400_BAD_REQUEST)
 
             try:
-                product = InfoProduct.objects.get(pk=product_id)
+                product = InfoProduct.objects.get(tig_id=product_id)
 
                 if 0 <= float(sale_percentage) <= 100:
                     product.sale_percentage = float(sale_percentage)
@@ -215,21 +199,21 @@ class PromoList(APIView):
 #        NO DEFITION of post --> server will return "405 NOT ALLOWED"
 
 class PromoDetail(APIView):
-    def get_object(self, pk):
+    def get_object(self, tig_id):
         try:
-            return ProduitEnPromotion.objects.get(pk=pk)
+            return ProduitEnPromotion.objects.get(tig_id=tig_id)
         except ProduitEnPromotion.DoesNotExist:
             raise Http404
 
-    def get(self, request, pk, format=None):
-        prod = self.get_object(pk)
+    def get(self, request, tig_id, format=None):
+        prod = self.get_object(tig_id)
         serializer = ProduitEnPromotionSerializer(prod)
         response = requests.get(baseUrl+'product/'+str(serializer.data['tigID'])+'/')
         jsondata = response.json()
         return Response(jsondata)
-#    def put(self, request, pk, format=None):
+#    def put(self, request, tig_id, format=None):
 #        NO DEFITION of put --> server will return "405 NOT ALLOWED"
-#    def delete(self, request, pk, format=None):
+#    def delete(self, request, tig_id, format=None):
 #        NO DEFITION of delete --> server will return "405 NOT ALLOWED"
 
 class AvailableList(APIView):
