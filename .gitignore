@@ -27,3 +27,4 @@ TME_webAPI_DBO/myTidyVEnv/Lib/site-packages/urllib3/util/__pycache__/url.cpython
 TME_webAPI_DBO/mySearchEngine/mytig/__pycache__/urls.cpython-39.pyc
 TME_webAPI_DBO/mySearchEngine/mytig/__pycache__/views.cpython-39.pyc
 *.pyc
+*.pyc
