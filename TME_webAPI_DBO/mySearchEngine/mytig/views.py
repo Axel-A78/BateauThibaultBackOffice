@@ -9,6 +9,7 @@ from django.http import Http404
 from rest_framework_simplejwt.tokens import AccessToken
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import permission_classes
 from django.core.exceptions import ObjectDoesNotExist
 # Ajoutez ces imports si nécessaire
 from django.core.exceptions import ValidationError
@@ -79,20 +80,36 @@ class RedirectionShipPointDetails(APIView):
             return Response(jsondata)
         except:
             raise Http404
+@permission_classes([IsAuthenticated])
 class UpdateProductStock(APIView):
-    permission_classes = (IsAuthenticated,)
-    def get_object(self, tig_id):
-        try:
-            return InfoProduct.objects.get(id=tig_id)
-        except InfoProduct.DoesNotExist:
-            raise Http404
+    def patch(self, request, tig_id, format=None):
+        # Assurez-vous que les données de la demande sont correctement formatées
+        # Exemple : {"availability": false}
+        data = request.data
 
-    def patch(self, request, tig_id):
-        product = self.get_object(tig_id)
-        product.unit = request.data.get('unit', product.unit)
-        product.save()
-        serializer = InfoProductSerializer(product)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        # Récupérez le token d'authentification de la requête entrante
+        token = request.META.get('HTTP_AUTHORIZATION')
+
+        # Construisez l'URL pour la requête PATCH en utilisant l'ID du produit
+        url = f"{baseUrl}product/{str(tig_id)}/"
+
+        # Récupérez le token d'authentification de la requête entrante
+        token = request.META.get('HTTP_AUTHORIZATION')
+        print(f"Token: {token}")  # Imprimez le token pour vérifier s'il est correctement extrait
+
+         # Ajoutez le token aux headers
+        headers = {'Authorization': token}
+        # Effectuez la requête PATCH avec les en-têtes d'authentification
+        response = requests.patch(url, json=data, headers=headers)
+
+        # Si la mise à jour a réussi, renvoyez les données mises à jour
+        if response.status_code == status.HTTP_200_OK:
+            jsondata = response.json()
+            return Response(jsondata)
+
+        # Sinon, renvoyez une réponse d'erreur
+        return Response(response.json(), status=response.status_code)
 
 class UpdateProductSalePercentage(APIView):
     def put(self, request, tig_id, format=None):
