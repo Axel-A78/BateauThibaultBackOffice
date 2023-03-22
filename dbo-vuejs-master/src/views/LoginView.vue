@@ -21,8 +21,8 @@
             class="p-inputtext p-component p-filled"
           />
         </div>
-        <div class="p-d-flex p-jc-between p-mt-6">
-          <div class="card flex justify-content-center">
+        <div>
+          <div class="login-card flex justify-content-center">
             <Button
               type="button"
               label="Se connecter"
@@ -30,8 +30,8 @@
               @click="login"
             />
           </div>
-          <div>
-            <Button label="Effacer" @click="clear" text raised />
+          <div class="clear-card flex justify-content-center">
+            <Button class="clearbtn" label="Effacer" @click="clear" link />
           </div>
         </div>
       </div>
@@ -49,7 +49,6 @@ export default {
   },
   methods: {
     login() {
-      // const token = localStorage.getItem("token");
       const requestOptions = {
         method: "POST",
         headers: {
@@ -88,6 +87,23 @@ export default {
 
 <style scoped>
 .login-container {
+  justify-content: center;
+}
+h2 {
+  width: 400px;
+  display: inline-block;
+  padding-left: 150px;
+}
+label {
+  margin-left: 12.5%;
+}
+input {
+  max-width: 75%;
+  margin-left: 12.5%;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+.login-container {
   height: 100vh;
   display: flex;
   justify-content: center;
@@ -97,5 +113,32 @@ export default {
 .login-card {
   width: 90%;
   max-width: 400px;
+}
+
+.p-button.p-component {
+  width: 400px;
+  max-width: 100%;
+  border-radius: 10px;
+}
+
+.p-button.p-component.p-button-raised.p-button-text {
+  border-radius: 10px;
+}
+
+.p-button.p-component.p-button-link.clearbtn {
+  max-width: fit-content;
+}
+
+.login-card.flex.justify-content-center {
+  width: 50%;
+  margin-top: 5%;
+  margin-left: 25%;
+}
+
+.clear-card.flex.justify-content-center {
+  width: 50%;
+  margin-bottom: 1%;
+  margin-top: 5%;
+  margin-left: 40%;
 }
 </style>
