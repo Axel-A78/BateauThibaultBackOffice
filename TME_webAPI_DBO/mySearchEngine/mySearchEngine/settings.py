@@ -124,6 +124,17 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 CORS_ORIGIN_ALLOW_ALL=True
 CORS_ALLOW_CREDENTIALS= True
 CORS_ALLOW_ALL_ORIGINS = True
@@ -142,7 +153,6 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
 }
-
 from datetime import timedelta
 
 SIMPLE_JWT = {
