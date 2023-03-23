@@ -19,20 +19,21 @@ class InfoProductList(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, format=None):
-        products = ProductManager.get_all_products()
+        products = InfoProduct.objects.all()
         serializer = InfoProductSerializer(products, many=True)
         return Response(serializer.data)
+
 
 class InfoProductDetail(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, tig_id, format=None):
-        product = ProductManager.get_product_by_tig_id(tig_id)
-        if product is None:
+        try:
+            product = InfoProduct.objects.get(tig_id=tig_id)
+            serializer = InfoProductSerializer(product)
+            return Response(serializer.data)
+        except InfoProduct.DoesNotExist:
             raise Http404
-
-        serializer = InfoProductSerializer(product)
-        return Response(serializer.data)
 
 class UpdateProductStock(APIView):
     def patch(self, request, tig_id):
