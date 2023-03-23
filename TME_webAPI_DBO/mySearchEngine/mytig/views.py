@@ -14,35 +14,28 @@ from django.core.exceptions import ObjectDoesNotExist
 # Ajoutez ces imports si nécessaire
 from django.core.exceptions import ValidationError
 from .models import InfoProduct
-from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
-
+from mytig.models import ProduitEnPromotion, AvailableProduct
+from mytig.serializers import ProduitEnPromotionSerializer, AvailableProductSerializer
+from django.http import Http404
+from django.http import JsonResponse
 ##response = requests.post('http://127.0.0.1:8000/api/token/', data={'username': 'eric', 'password': 'eric123'})
 ##token = response.json()['access']
 
 ##headers = {'Authorization': 'Bearer ' + token}
 ##response = requests.get('http://127.0.0.1:8000/infoproducts/', headers=headers)
-#######################
-#...JWT début...#
-from rest_framework.permissions import IsAuthenticated
-#...JWT fin...#
-#######################
+
+
 class InfoProductList(APIView):
-#######################
-#...TME3 JWT starts...#
     permission_classes = (IsAuthenticated,)
-#...end of TME3 JWT...#
-#######################
-def get(self, request, format=None):
-    products = InfoProduct.objects.all()
-    serializer = InfoProductSerializer(products, many=True)
-    return Response(serializer.data)
+
+    def get(self, request, format=None):
+        products = InfoProduct.objects.all()
+        serializer = InfoProductSerializer(products, many=True)
+        return Response(serializer.data)
 class InfoProductDetail(APIView):
-#######################
-#...TME3 JWT starts...#
     permission_classes = (IsAuthenticated,)
-#...end of TME3 JWT...#
-#######################
+
 
 # Create your views here.
 class RedirectionListeDeProduits(APIView):
@@ -80,28 +73,27 @@ class RedirectionShipPointDetails(APIView):
             return Response(jsondata)
         except:
             raise Http404
-@permission_classes([IsAuthenticated])
 class UpdateProductStock(APIView):
+    permission_classes = (IsAuthenticated,)
     def patch(self, request, tig_id, format=None):
         # Assurez-vous que les données de la demande sont correctement formatées
         # Exemple : {"availability": false}
         data = request.data
-
-        
-        # Récupérez le token d'authentification de la requête entrante
-        token = request.META.get('HTTP_AUTHORIZATION')
-
         # Construisez l'URL pour la requête PATCH en utilisant l'ID du produit
         url = f"{baseUrl}product/{str(tig_id)}/"
+        print(f"Lien url : {url}")
 
-        # Récupérez le token d'authentification de la requête entrante
-        token = request.META.get('HTTP_AUTHORIZATION')
+        # Récupérez le token d'authentification de l'utilisateur
+        token = request.auth
         print(f"Token: {token}")  # Imprimez le token pour vérifier s'il est correctement extrait
 
-         # Ajoutez le token aux headers
-        headers = {'Authorization': token}
+        # Préparez les en-têtes avec le token d'authentification
+        headers = {'Authorization': f'Bearer {token}'}
+        print(f"Headers : {headers}")
         # Effectuez la requête PATCH avec les en-têtes d'authentification
         response = requests.patch(url, json=data, headers=headers)
+        print(f"Response : {response}")
+
 
         # Si la mise à jour a réussi, renvoyez les données mises à jour
         if response.status_code == status.HTTP_200_OK:
@@ -198,10 +190,7 @@ class UpdateMultipleProductPromotions(APIView):
         return Response({"status": "Promotions updated successfully"}, status=HTTP_200_OK)
 
 
-from mytig.models import ProduitEnPromotion, AvailableProduct
-from mytig.serializers import ProduitEnPromotionSerializer, AvailableProductSerializer
-from django.http import Http404
-from django.http import JsonResponse
+
 
 class PromoList(APIView):
     def get(self, request, format=None):
