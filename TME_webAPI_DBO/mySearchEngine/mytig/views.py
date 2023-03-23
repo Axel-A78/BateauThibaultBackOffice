@@ -5,103 +5,58 @@ from mytig.config import baseUrl
 from mytig.models import InfoProduct
 from mytig.serializers import InfoProductSerializer
 from rest_framework import status
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from rest_framework_simplejwt.tokens import AccessToken
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes
 from django.core.exceptions import ObjectDoesNotExist
-# Ajoutez ces imports si nécessaire
-from django.core.exceptions import ValidationError
-from .models import InfoProduct
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from mytig.models import ProduitEnPromotion, AvailableProduct
 from mytig.serializers import ProduitEnPromotionSerializer, AvailableProductSerializer
-from django.http import Http404
-from django.http import JsonResponse
-##response = requests.post('http://127.0.0.1:8000/api/token/', data={'username': 'eric', 'password': 'eric123'})
-##token = response.json()['access']
-
-##headers = {'Authorization': 'Bearer ' + token}
-##response = requests.get('http://127.0.0.1:8000/infoproducts/', headers=headers)
-
 
 class InfoProductList(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, format=None):
-        products = InfoProduct.objects.all()
+        products = ProductManager.get_all_products()
         serializer = InfoProductSerializer(products, many=True)
         return Response(serializer.data)
+
 class InfoProductDetail(APIView):
     permission_classes = (IsAuthenticated,)
 
-
-# Create your views here.
-class RedirectionListeDeProduits(APIView):
-    def get(self, request, format=None):
-        response = requests.get(baseUrl+'products/')
-        jsondata = response.json()
-        return Response(jsondata)
-#    def post(self, request, format=None):
-#        NO DEFITION of post --> server will return "405 NOT ALLOWED"
-
-class RedirectionDetailProduit(APIView):
     def get(self, request, tig_id, format=None):
-        try:
-            response = requests.get(baseUrl+'product/'+str(tig_id)+'/')
-            jsondata = response.json()
-            return Response(jsondata)
-        except:
+        product = ProductManager.get_product_by_tig_id(tig_id)
+        if product is None:
             raise Http404
-#    def put(self, request, pk, format=None):
-#        NO DEFITION of put --> server will return "405 NOT ALLOWED"
-#    def delete(self, request, pk, format=None):
-#        NO DEFITION of delete --> server will return "405 NOT ALLOWED"
 
-class RedirectionShipPoints(APIView):
-    def get(self, request, format=None):
-        response = requests.get(baseUrl+'shipPoints/')
-        jsondata = response.json()
-        return Response(jsondata)
+        serializer = InfoProductSerializer(product)
+        return Response(serializer.data)
 
-class RedirectionShipPointDetails(APIView):
-    def get(self, request, tig_id, format=None):
-        try:
-            response = requests.get(baseUrl+'shipPoint/'+str(tig_id)+'/')
-            jsondata = response.json()
-            return Response(jsondata)
-        except:
-            raise Http404
 class UpdateProductStock(APIView):
-    permission_classes = (IsAuthenticated,)
-    def patch(self, request, tig_id, format=None):
-        # Assurez-vous que les données de la demande sont correctement formatées
-        # Exemple : {"availability": false}
-        data = request.data
-        # Construisez l'URL pour la requête PATCH en utilisant l'ID du produit
-        url = f"{baseUrl}product/{str(tig_id)}/"
-        print(f"Lien url : {url}")
+    def patch(self, request, tig_id):
+        try:
+            product = InfoProduct.objects.get(tig_id=tig_id)
+        except InfoProduct.DoesNotExist:
+            return Response({"error": f"Product {tig_id} not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        # Récupérez le token d'authentification de l'utilisateur
-        token = request.auth
-        print(f"Token: {token}")  # Imprimez le token pour vérifier s'il est correctement extrait
+        try:
+            quantityInStock = request.data["quantityInStock"]
+            new_stock = product.quantityInStock + int(quantityInStock)
+            if new_stock < 0:
+                return Response({"error": "Stock cannot be negative"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Préparez les en-têtes avec le token d'authentification
-        headers = {'Authorization': f'Bearer {token}'}
-        print(f"Headers : {headers}")
-        # Effectuez la requête PATCH avec les en-têtes d'authentification
-        response = requests.patch(url, json=data, headers=headers)
-        print(f"Response : {response}")
+            product.quantityInStock = new_stock
+            product.save()
+            serializer = InfoProductSerializer(product)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
+        except KeyError:
+            return Response({"error": "Missing parameter 'quantityInStock'"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Si la mise à jour a réussi, renvoyez les données mises à jour
-        if response.status_code == status.HTTP_200_OK:
-            jsondata = response.json()
-            return Response(jsondata)
-
-        # Sinon, renvoyez une réponse d'erreur
-        return Response(response.json(), status=response.status_code)
+        except ValueError:
+            return Response({"error": "Invalid parameter 'quantityInStock'"}, status=status.HTTP_400_BAD_REQUEST)
 
 class UpdateProductSalePercentage(APIView):
     def put(self, request, tig_id, format=None):
@@ -127,6 +82,7 @@ class UpdateProductSalePercentage(APIView):
             return Response(jsondata, status=status.HTTP_200_OK)
         except:
             raise Http404
+
 class ProductsByCategory(APIView):
 
     def get(self, request, category, format=None):
@@ -136,6 +92,7 @@ class ProductsByCategory(APIView):
         products = InfoProduct.objects.filter(category=category)
         serializer = InfoProductSerializer(products, many=True)
         return Response(serializer.data)
+
 class UpdateMultipleProductStocks(APIView):
     def put(self, request, format=None):
         products_data = request.data
@@ -149,10 +106,10 @@ class UpdateMultipleProductStocks(APIView):
 
             try:
                 product = InfoProduct.objects.get(tig_id=product_id)
-                new_stock = product.stock + int(change)
+                new_stock = product.quantityInStock + int(change)
 
                 if new_stock >= 0:
-                    product.stock = new_stock
+                    product.quantityInStock = new_stock
                     product.save()
                 else:
                     return Response({'error': f'Invalid stock change for product {product_id}'}, status=HTTP_400_BAD_REQUEST)
@@ -161,6 +118,7 @@ class UpdateMultipleProductStocks(APIView):
                 return Response({"error": f"Product {product_id} not found"}, status=HTTP_400_BAD_REQUEST)
 
         return Response({"status": "Stocks updated successfully"}, status=HTTP_200_OK)
+
 
 class UpdateMultipleProductPromotions(APIView):
 
@@ -190,19 +148,18 @@ class UpdateMultipleProductPromotions(APIView):
         return Response({"status": "Promotions updated successfully"}, status=HTTP_200_OK)
 
 
-
-
 class PromoList(APIView):
     def get(self, request, format=None):
-        res=[]
+        res = []
         for prod in ProduitEnPromotion.objects.all():
             serializer = ProduitEnPromotionSerializer(prod)
-            response = requests.get(baseUrl+'product/'+str(serializer.data['tigID'])+'/')
-            jsondata = response.json()
-            res.append(jsondata)
+            try:
+                product = InfoProduct.objects.get(tig_id=serializer.data['tigID'])
+                res.append(product.to_dict())
+            except InfoProduct.DoesNotExist:
+                pass
         return JsonResponse(res, safe=False)
-#    def post(self, request, format=None):
-#        NO DEFITION of post --> server will return "405 NOT ALLOWED"
+
 
 class PromoDetail(APIView):
     def get_object(self, tig_id):
@@ -214,24 +171,26 @@ class PromoDetail(APIView):
     def get(self, request, tig_id, format=None):
         prod = self.get_object(tig_id)
         serializer = ProduitEnPromotionSerializer(prod)
-        response = requests.get(baseUrl+'product/'+str(serializer.data['tigID'])+'/')
-        jsondata = response.json()
-        return Response(jsondata)
-#    def put(self, request, tig_id, format=None):
-#        NO DEFITION of put --> server will return "405 NOT ALLOWED"
-#    def delete(self, request, tig_id, format=None):
-#        NO DEFITION of delete --> server will return "405 NOT ALLOWED"
+        try:
+            product = InfoProduct.objects.get(tig_id=serializer.data['tigID'])
+            return Response(product.to_dict())
+        except InfoProduct.DoesNotExist:
+            return Response({"error": f"Product {serializer.data['tigID']} not found"}, status=HTTP_400_BAD_REQUEST)
+
 
 class AvailableList(APIView):
     def get(self, request, format=None):
-        res=[]
+        res = []
         for prod in AvailableProduct.objects.all():
             serializer = AvailableProductSerializer(prod)
-            response = requests.get(baseUrl+'product/'+str(serializer.data['tigID'])+'/')
-            jsondata = response.json()
-            res.append(jsondata)
+            try:
+                product = InfoProduct.objects.get(tig_id=serializer.data['tigID'])
+                res.append(product.to_dict())
+            except InfoProduct.DoesNotExist:
+                pass
         return JsonResponse(res, safe=False)
-    
+
+
 class AvailableDetail(APIView):
     def get_object(self, pk):
         try:
@@ -242,11 +201,10 @@ class AvailableDetail(APIView):
     def get(self, request, pk, format=None):
         prod = self.get_object(pk)
         serializer = AvailableProductSerializer(prod)
-        response = requests.get(baseUrl+'product/'+str(serializer.data['tigID'])+'/')
-        jsondata = response.json()
-        return Response(jsondata)
-#    def put(self, request, pk, format=None):
-#        NO DEFITION of put --> server will return "405 NOT ALLOWED"
-#    def delete(self, request, pk, format=None):
-#        NO DEFITION of delete --> server will return "405 NOT ALLOWED"
+        try:
+            product = InfoProduct.objects.get(tig_id=serializer.data['tigID'])
+            return Response(product.to_dict())
+        except InfoProduct.DoesNotExist:
+            return Response({"error": f"Product {serializer.data['tigID']} not found"}, status=HTTP_400_BAD_REQUEST)
+
 
