@@ -63,26 +63,30 @@ class UpdateProductSalePercentage(APIView):
     def put(self, request, tig_id, format=None):
         try:
             product_data = request.data
-            sale_percentage = product_data.get('sale_percentage')
+            sale_percentage = product_data.get('discount')
 
             if sale_percentage is not None:
-                # Récupérez les données du produit à partir de l'API externe
-                response = requests.get(baseUrl + f'product/{tig_id}/')
-                product = response.json()
+                # Récupérez le produit de la base de données
+                try:
+                    product = InfoProduct.objects.get(tig_id=tig_id)
+                except InfoProduct.DoesNotExist:
+                    return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
 
-                # Mettez à jour le prix en promotion en fonction du pourcentage de promotion
+                # Mettez à jour les données de promotion du produit
                 if 0 <= float(sale_percentage) <= 100:
-                    new_price_on_sale = product['price'] * (1 - float(sale_percentage) / 100)
-                    product_data['price_on_sale'] = new_price_on_sale
+                    product.sale_percentage = float(sale_percentage)
+                    product.price_on_sale = product.price * (1 - float(sale_percentage) / 100)
+                    product.sale = True
+                    product.save()
                 else:
                     return Response({'error': 'Invalid sale percentage'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Mettez à jour les données du produit
-            response = requests.put(baseUrl + f'product/{tig_id}/', json=product_data)
-            jsondata = response.json()
-            return Response(jsondata, status=status.HTTP_200_OK)
+            serializer = InfoProductSerializer(product)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except:
             raise Http404
+
+
 
 class ProductsByCategory(APIView):
 
@@ -99,26 +103,34 @@ class UpdateMultipleProductStocks(APIView):
         products_data = request.data
 
         for product_data in products_data:
-            product_id = product_data.get('id')
-            change = product_data.get('change')
+            '''
+            Ce if vérifie si la clé 'id' et la clé 'quantityInStock' sont présentes dans le dictionnaire product_data. Si l'une ou l'autre de ces clés est absente, cela signifie que les données fournies pour la mise à jour du stock sont invalides. Par conséquent, la condition retournera True et la réponse renvoyée sera une erreur 400 Bad Request.
 
-            if product_id is None or change is None:
+            La fonction all() prend un itérable (ici, un objet dict en tant que dictionnaire de données du produit) et retourne True si tous les éléments sont True, sinon False. Dans ce cas, cela signifie que la condition retournera True si toutes les clés 'id' et 'quantityInStock' sont présentes dans le dictionnaire product_data.
+            '''
+            if not all(k in product_data for k in ('id', 'quantityInStock')):
+                return Response({"error": "Invalid product data"}, status=HTTP_400_BAD_REQUEST)
+
+            product_id = product_data.get('id')
+            quantityInStock = product_data.get('quantityInStock')
+
+            if product_id is None or quantityInStock is None:
                 return Response({"error": "Invalid product data"}, status=HTTP_400_BAD_REQUEST)
 
             try:
                 product = InfoProduct.objects.get(tig_id=product_id)
-                new_stock = product.quantityInStock + int(change)
+                new_stock = product.quantityInStock + int(quantityInStock)
 
                 if new_stock >= 0:
                     product.quantityInStock = new_stock
                     product.save()
                 else:
-                    return Response({'error': f'Invalid stock change for product {product_id}'}, status=HTTP_400_BAD_REQUEST)
+                    return Response({'error': f'Invalid quantityInStock for product {product_id}'}, status=HTTP_400_BAD_REQUEST)
 
             except InfoProduct.DoesNotExist:
                 return Response({"error": f"Product {product_id} not found"}, status=HTTP_400_BAD_REQUEST)
 
-        return Response({"status": "Stocks updated successfully"}, status=HTTP_200_OK)
+        return Response({"status": "quantityInStock updated successfully"}, status=HTTP_200_OK)
 
 
 class UpdateMultipleProductPromotions(APIView):
@@ -127,26 +139,35 @@ class UpdateMultipleProductPromotions(APIView):
         products_data = request.data
 
         for product_data in products_data:
-            product_id = product_data.get('id')
-            sale_percentage = product_data.get('sale_percentage')
+            if not all(k in product_data for k in ('id', 'sale', 'discount')):
+                return Response({"error": "Invalid product data"}, status=HTTP_400_BAD_REQUEST)
 
-            if product_id is None or sale_percentage is None:
+            product_id = product_data.get('id')
+            sale = product_data.get('sale')
+            discount = product_data.get('discount')
+
+            if product_id is None or sale is None or discount is None:
                 return Response({"error": "Invalid product data"}, status=HTTP_400_BAD_REQUEST)
 
             try:
                 product = InfoProduct.objects.get(tig_id=product_id)
 
-                if 0 <= float(sale_percentage) <= 100:
-                    product.sale_percentage = float(sale_percentage)
-                    product.price_on_sale = product.price * (1 - float(sale_percentage) / 100)
+                # Mise à jour du champ "sale" du produit
+                product.sale = sale
+
+                # Mise à jour du champ "discount" du produit
+                if 0 <= float(discount) <= 100:
+                    product.discount = float(discount)
+                    product.price_on_sale = product.price * (1 - float(discount) / 100)
                     product.save()
                 else:
-                    return Response({'error': f'Invalid sale percentage for product {product_id}'}, status=HTTP_400_BAD_REQUEST)
+                    return Response({'error': f'Invalid discount for product {product_id}'}, status=HTTP_400_BAD_REQUEST)
 
             except InfoProduct.DoesNotExist:
                 return Response({"error": f"Product {product_id} not found"}, status=HTTP_400_BAD_REQUEST)
 
         return Response({"status": "Promotions updated successfully"}, status=HTTP_200_OK)
+
 
 
 class PromoList(APIView):
