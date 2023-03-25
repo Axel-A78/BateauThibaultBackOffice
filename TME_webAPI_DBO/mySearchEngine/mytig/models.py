@@ -31,3 +31,19 @@ class InfoProduct(models.Model):
 
     class Meta:
         ordering = ('name',)
+
+class Sale(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    product = models.ForeignKey(InfoProduct, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    price = models.FloatField(default=0)
+
+class Invoice(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    amount = models.FloatField(default=0)
+
+class Lot(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    info_product = models.ForeignKey(InfoProduct, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=0)
+    invoice = models.ForeignKey(Invoice, on_delete=models.SET_NULL, null=True, blank=True)
