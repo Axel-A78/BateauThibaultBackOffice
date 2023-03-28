@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import HomeView from "../views/HomeView.vue";
-import ProductDetail from "../views/ProductDetail.vue";
+import ProductDetails from "@/components/ProductDetails.vue";
 import LoginView from "../views/LoginView.vue";
 import TestView from "../views/TestView.vue";
 import { loggedIn } from "@/utils/auth";
@@ -13,9 +13,9 @@ const routes: Array<RouteRecordRaw> = [
   },
 
   {
-    path: "/product/:id",
-    name: "ProductDetail",
-    component: ProductDetail,
+    path: "/product-details",
+    name: "ProductDetails",
+    component: ProductDetails,
     props: true,
   },
 

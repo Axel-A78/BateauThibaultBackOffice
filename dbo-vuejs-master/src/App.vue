@@ -1,4 +1,5 @@
 <template>
+  <HeaderComponent />
   <router-view />
 </template>
 
@@ -13,3 +14,15 @@ body {
   height: 100%;
 }
 </style>
+
+<script lang="ts">
+import { defineComponent } from "vue";
+import HeaderComponent from "@/components/HeaderComponent.vue"; // Importez HeaderComponent
+
+export default defineComponent({
+  name: "App",
+  components: {
+    HeaderComponent, // Ajoutez HeaderComponent à la liste des composants
+  },
+});
+</script>

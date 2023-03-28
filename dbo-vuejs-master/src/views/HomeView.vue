@@ -1,5 +1,5 @@
 <template>
-  <HeaderComponent />
+  <HeaderComponent @navigate="navigateTo" />
   <ProductList />
 </template>
 
@@ -12,7 +12,11 @@ export default defineComponent({
   name: "HomeView",
   components: {
     ProductList,
-    HeaderComponent,
+  },
+  methods: {
+    navigateTo(routeName: any) {
+      this.$router.push({ name: routeName });
+    },
   },
 });
 </script>

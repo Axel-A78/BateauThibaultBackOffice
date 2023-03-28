@@ -34,7 +34,7 @@ class InfoProduct(models.Model):
 
 class Sale(models.Model):
     created = models.DateTimeField(auto_now_add=True)
-    product = models.ForeignKey(InfoProduct, on_delete=models.CASCADE)
+    product = models.ForeignKey(InfoProduct, on_delete=models.CASCADE, related_name='sales')
     quantity = models.PositiveIntegerField(default=1)
     price = models.FloatField(default=0)
 

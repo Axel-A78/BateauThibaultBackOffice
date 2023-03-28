@@ -6140,6 +6140,11 @@
   "resolved" "https://registry.npmmirror.com/vary/-/vary-1.1.2.tgz"
   "version" "1.1.2"
 
+"vue-class-component@^8.0.0-rc.1":
+  "integrity" "sha512-w1nMzsT/UdbDAXKqhwTmSoyuJzUXKrxLE77PCFVuC6syr8acdFDAq116xgvZh9UCuV0h+rlCtxXolr3Hi3HyPQ=="
+  "resolved" "https://registry.npmjs.org/vue-class-component/-/vue-class-component-8.0.0-rc.1.tgz"
+  "version" "8.0.0-rc.1"
+
 "vue-eslint-parser@^8.0.0", "vue-eslint-parser@^8.0.1":
   "integrity" "sha512-dzHGG3+sYwSf6zFBa0Gi9ZDshD7+ad14DGOdTLjruRVgZXe2J+DcZ9iUhyR48z5g1PqRa20yt3Njna/veLJL/g=="
   "resolved" "https://registry.npmjs.org/vue-eslint-parser/-/vue-eslint-parser-8.3.0.tgz"
@@ -6166,6 +6171,11 @@
     "chalk" "^4.1.0"
     "hash-sum" "^2.0.0"
     "loader-utils" "^2.0.0"
+
+"vue-next-select@^2.10.5":
+  "integrity" "sha512-O77bdbp2wj/Dkpd8XFv21EYXI8UtqgTxnKBsycCd2pUe4SAxKsT1h3MT+b7tuyGQV5udMpBYaUE445Z1VdHyUw=="
+  "resolved" "https://registry.npmjs.org/vue-next-select/-/vue-next-select-2.10.5.tgz"
+  "version" "2.10.5"
 
 "vue-router@^4.0.3":
   "integrity" "sha512-DYWYwsG6xNPmLq/FmZn8Ip+qrhFEzA14EI12MsMgVxvHFDYvlr4NXpVF5hrRH1wVcDP8fGi5F4rxuJSl8/r+EQ=="

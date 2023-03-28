@@ -1,5 +1,5 @@
 import requests
-from TME_webAPI_DBO.mySearchEngine.mytig.models import Lot
+from mytig.models import Lot
 from mytig.models import Sale
 from rest_framework.views import APIView
 from rest_framework.response import Response

@@ -40,47 +40,59 @@
 </template>
 
 <script>
+import { useStore } from "vuex";
+import { ref } from "vue";
+import { useRouter, useRoute } from "vue-router";
+
 export default {
-  data() {
-    return {
-      username: "",
-      password: "",
-    };
-  },
-  methods: {
-    login() {
+  setup() {
+    const store = useStore();
+    const router = useRouter();
+    const route = useRoute();
+    const username = ref("");
+    const password = ref("");
+
+    const login = async () => {
       const requestOptions = {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username: this.username,
-          password: this.password,
+          username: username.value,
+          password: password.value,
         }),
       };
-      fetch("http://localhost:8000/api/token/", requestOptions)
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Nom d'utilisateur ou mot de passe incorrect.");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          // Stocker le jeton d'authentification dans le local storage pour une utilisation ultérieure
-          localStorage.setItem("token", data.access);
-          // Rediriger l'utilisateur vers la page d'accueil ou une autre page protégée
-          this.$router.replace(this.$route.query.redirect || "/test");
-        })
-        .catch((error) => {
-          console.log(error);
-          alert(error.message);
-        });
-    },
-    clear() {
-      this.username = "";
-      this.password = "";
-    },
+      try {
+        const response = await fetch(
+          "http://localhost:8000/api/token/",
+          requestOptions
+        );
+        if (!response.ok) {
+          throw new Error("Nom d'utilisateur ou mot de passe incorrect.");
+        }
+        const data = await response.json();
+        // Utilisez la mutation 'setToken' du module 'auth' pour stocker le token
+        store.commit("auth/setToken", data.access);
+        // Rediriger l'utilisateur vers la page d'accueil ou une autre page protégée
+        router.replace(route.query.redirect || "/");
+      } catch (error) {
+        console.log(error);
+        alert(error.message);
+      }
+    };
+
+    const clear = () => {
+      username.value = "";
+      password.value = "";
+    };
+
+    return {
+      username,
+      password,
+      login,
+      clear,
+    };
   },
 };
 </script>

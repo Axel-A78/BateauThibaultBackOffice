@@ -7,6 +7,7 @@
           src="https://primefaces.org/cdn/primevue/images/logo.svg"
           height="40"
           class="mr-2"
+          href="http://localhost:8080/"
         />
       </template>
       <template #end>
@@ -146,6 +147,13 @@ export default {
         {
           label: "Quit",
           icon: "pi pi-fw pi-power-off",
+        },
+        {
+          label: "Product Details",
+          icon: "pi pi-fw pi-info-circle",
+          command: () => {
+            this.$emit("navigate", "ProductDetails");
+          },
         },
       ],
     };
