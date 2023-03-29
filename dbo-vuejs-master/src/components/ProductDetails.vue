@@ -26,7 +26,7 @@
       <p v-if="selectedProduct.promotion_percentage">
         Pourcentage de promotion: {{ selectedProduct.promotion_percentage }}%
       </p>
-      <p>Quantité en stock: {{ selectedProduct.stock }}</p>
+      <p>Quantité en stock: {{ selectedProduct.quantityInStock }}</p>
       <p>Nombre d'articles vendus: {{ selectedProduct.sold_count }}</p>
       <p>Commentaires: {{ selectedProduct.comments }}</p>
     </div>
@@ -78,7 +78,7 @@ interface Product {
   price: number;
   price_on_sale?: number;
   promotion_percentage?: number;
-  stock: number;
+  quantityInStock: number;
   sold_count: number;
   comments: string;
 }
@@ -122,7 +122,7 @@ export default defineComponent({
       if (!selectedProduct.value) return;
       if (
         stockChange.value < 1 ||
-        stockChange.value > selectedProduct.value.stock
+        stockChange.value > selectedProduct.value.quantityInStock
       ) {
         errorMessage.value = "Veuillez entrer un nombre valide.";
       } else {

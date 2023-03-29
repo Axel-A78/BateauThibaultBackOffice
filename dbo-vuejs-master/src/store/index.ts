@@ -20,6 +20,7 @@ interface StockUpdatePayload {
   productId: number;
   stockChange: number;
 }
+
 export default createStore<RootState>({
   modules: {
     auth,
@@ -46,7 +47,9 @@ export default createStore<RootState>({
     ) {
       const { commit, state, rootGetters } = context;
       const { productId, stockChange } = payload;
-      if (!rootGetters.isAuthenticated) {
+      const token = rootGetters["auth/getToken"];
+
+      if (!token) {
         console.error("Accès refusé. Veuillez vous connecter.");
         return;
       }
@@ -63,9 +66,9 @@ export default createStore<RootState>({
             method: "PATCH",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${rootGetters["auth/getToken"]}`,
+              Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({ quantityInStock: stockChange }),
+            body: JSON.stringify({ quantityInStock: newQuantityInStock }),
           }
         );
 
@@ -81,6 +84,7 @@ export default createStore<RootState>({
         }
       }
     },
+
     async fetchProducts({ commit, rootGetters }) {
       console.log("token recup : ", rootGetters["auth/getToken"]);
       const response = await fetch("http://localhost:8000/infoproducts", {
