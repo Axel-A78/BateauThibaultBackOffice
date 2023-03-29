@@ -9,7 +9,6 @@
         @update:modelValue="displaySelectedProduct($event)"
       />
     </div>
-
     <div v-if="selectedProduct" class="product-info">
       <div>
         <label for="stock-change">Changer le stock :</label>
@@ -67,21 +66,21 @@
   margin-bottom: 0.5rem;
 }
 </style>
-
 <script lang="ts">
-import { defineComponent, ref, watch } from "vue";
+import { computed, defineComponent, ref, watch } from "vue";
 import { useStore } from "vuex";
+import { Product } from "@/types";
 
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  price_on_sale?: number;
-  promotion_percentage?: number;
-  stock: number;
-  sold_count: number;
-  comments: string;
-}
+// interface Product {
+//   id: number;
+//   name: string;
+//   price: number;
+//   price_on_sale?: number;
+//   promotion_percentage?: number;
+//   stock: number;
+//   sold_count: number;
+//   comments: string;
+// }
 
 export default defineComponent({
   name: "ProductDetails",
@@ -92,7 +91,14 @@ export default defineComponent({
     const stockChange = ref(0);
     const errorMessage = ref("");
 
-    store.dispatch("fetchProducts");
+    watch(
+      () => store.getters["auth/isAuthenticated"],
+      (isAuthenticated: boolean) => {
+        if (isAuthenticated) {
+          store.dispatch("fetchProducts");
+        }
+      }
+    );
 
     watch(
       () => store.getters.getProducts,
@@ -110,7 +116,6 @@ export default defineComponent({
       if (stockChange.value < 1) {
         errorMessage.value = "Veuillez entrer un nombre positif.";
       } else {
-        // Appelez l'action Vuex pour ajouter des articles au stock
         store.dispatch("updateQuantityInStock", {
           productId: selectedProduct.value.id,
           stockChange: stockChange.value,
@@ -118,15 +123,15 @@ export default defineComponent({
         errorMessage.value = "";
       }
     }
+
     function removeStock() {
       if (!selectedProduct.value) return;
       if (
         stockChange.value < 1 ||
-        stockChange.value > selectedProduct.value.stock
+        stockChange.value > selectedProduct.value.quantityInStock
       ) {
         errorMessage.value = "Veuillez entrer un nombre valide.";
       } else {
-        // Appelez l'action Vuex pour enlever des articles du stock
         store.dispatch("updateQuantityInStock", {
           productId: selectedProduct.value.id,
           stockChange: -stockChange.value,

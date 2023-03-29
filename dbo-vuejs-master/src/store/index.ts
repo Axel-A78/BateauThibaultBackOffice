@@ -87,8 +87,13 @@ export default createStore<RootState>({
           Authorization: `Bearer ${rootGetters.getToken}`,
         },
       });
-      const products = await response.json();
-      commit("setProducts", products);
+
+      if (response.ok) {
+        const products = await response.json();
+        commit("setProducts", products);
+      } else {
+        console.error("Erreur lors de la récupération des produits.");
+      }
     },
   },
   getters: {

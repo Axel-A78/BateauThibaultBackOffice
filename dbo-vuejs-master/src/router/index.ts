@@ -1,15 +1,19 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import HomeView from "../views/HomeView.vue";
+import ConnexionView from "../views/ConnexionView.vue";
 import ProductDetails from "@/components/ProductDetails.vue";
 import LoginView from "../views/LoginView.vue";
 import TestView from "../views/TestView.vue";
-import { loggedIn } from "@/utils/auth";
+import { loggedIn } from "@/store/auth";
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
-    name: "home",
+    name: "homeLogin",
     component: HomeView,
+    meta: {
+      requiresAuth: true,
+    },
   },
 
   {

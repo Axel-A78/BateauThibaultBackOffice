@@ -30,7 +30,7 @@
               @click="login"
             />
           </div>
-          <div class="clear-card flex justify-content-center">
+          <div class="clear-card flex justify-content">
             <Button class="clearbtn" label="Effacer" @click="clear" link />
           </div>
         </div>
@@ -74,7 +74,11 @@ export default {
         const data = await response.json();
         // Utilisez la mutation 'setToken' du module 'auth' pour stocker le token
         store.commit("auth/setToken", data.access);
+        // Stocker le token dans le local storage
+        localStorage.setItem("token", data.access);
+        console.log("Token stored:", data.access);
         // Rediriger l'utilisateur vers la page d'accueil ou une autre page protégée
+
         router.replace(route.query.redirect || "/");
       } catch (error) {
         console.log(error);

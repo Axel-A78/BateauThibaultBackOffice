@@ -1,5 +1,6 @@
 <template>
-  <HeaderComponent />
+  <link rel="stylesheet" href="https://unpkg.com/primeflex@^3/primeflex.css" />
+  <HeaderComponent @navigate="navigateTo" />
   <router-view />
 </template>
 
@@ -23,6 +24,11 @@ export default defineComponent({
   name: "App",
   components: {
     HeaderComponent, // Ajoutez HeaderComponent à la liste des composants
+  },
+  methods: {
+    navigateTo(routeName: any) {
+      this.$router.push({ name: routeName });
+    },
   },
 });
 </script>

@@ -20,7 +20,10 @@ import "primevue/resources/primevue.min.css";
 
 //icons
 import "primeicons/primeicons.css";
-
+const token = localStorage.getItem("token");
+if (token) {
+  store.commit("auth/setToken", token);
+}
 createApp(App)
   .use(store)
   .use(router)
