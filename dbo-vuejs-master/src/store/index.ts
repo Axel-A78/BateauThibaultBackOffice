@@ -63,7 +63,7 @@ export default createStore<RootState>({
             method: "PATCH",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${rootGetters.getToken}`,
+              Authorization: `Bearer ${rootGetters["auth/getToken"]}`,
             },
             body: JSON.stringify({ quantityInStock: stockChange }),
           }
@@ -82,9 +82,10 @@ export default createStore<RootState>({
       }
     },
     async fetchProducts({ commit, rootGetters }) {
+      console.log("token recup : ", rootGetters["auth/getToken"]);
       const response = await fetch("http://localhost:8000/infoproducts", {
         headers: {
-          Authorization: `Bearer ${rootGetters.getToken}`,
+          Authorization: `Bearer ${rootGetters["auth/getToken"]}`,
         },
       });
 
