@@ -2,13 +2,13 @@
   <div class="card relative z-2">
     <Menubar :model="items">
       <template #start>
-        <img
-          alt="logo"
-          src="https://i.postimg.cc/jqP7JhJf/image.png"
-          height="40"
-          class="mr-2"
-          href="http://localhost:8080/"
-        />
+        <a href="http://localhost:8080/">
+          <img
+            alt="logo"
+            src="https://i.postimg.cc/jqP7JhJf/image.png"
+            height="40"
+            class="mr-2"
+        /></a>
       </template>
       <template #end>
         <InputText placeholder="Search" type="text" />
@@ -28,57 +28,22 @@ export default {
     return {
       items: [
         {
-          label: "File",
+          label: "Liste des produits",
           icon: "pi pi-fw pi-file",
-          items: [
-            {
-              label: "New",
-              icon: "pi pi-fw pi-plus",
-              items: [
-                {
-                  label: "Bookmark",
-                  icon: "pi pi-fw pi-bookmark",
-                },
-                {
-                  label: "Video",
-                  icon: "pi pi-fw pi-video",
-                },
-              ],
-            },
-            {
-              label: "Delete",
-              icon: "pi pi-fw pi-trash",
-            },
-            {
-              separator: true,
-            },
-            {
-              label: "Export",
-              icon: "pi pi-fw pi-external-link",
-            },
-          ],
+          command: () => {
+            this.$emit("navigate", "ProductList");
+          },
         },
         {
-          label: "Edit",
+          label: "Modification de produit",
+          icon: "pi pi-fw pi-info-circle",
+          command: () => {
+            this.$emit("navigate", "ProductDetails");
+          },
+        },
+        {
+          label: "Rapport financier",
           icon: "pi pi-fw pi-pencil",
-          items: [
-            {
-              label: "Left",
-              icon: "pi pi-fw pi-align-left",
-            },
-            {
-              label: "Right",
-              icon: "pi pi-fw pi-align-right",
-            },
-            {
-              label: "Center",
-              icon: "pi pi-fw pi-align-center",
-            },
-            {
-              label: "Justify",
-              icon: "pi pi-fw pi-align-justify",
-            },
-          ],
         },
         {
           label: "Users",
@@ -115,45 +80,26 @@ export default {
           ],
         },
         {
-          label: "Events",
+          label: "Categorie",
           icon: "pi pi-fw pi-calendar",
           items: [
             {
-              label: "Edit",
+              label: "Crustace",
               icon: "pi pi-fw pi-pencil",
-              items: [
-                {
-                  label: "Save",
-                  icon: "pi pi-fw pi-calendar-plus",
-                },
-                {
-                  label: "Delete",
-                  icon: "pi pi-fw pi-calendar-minus",
-                },
-              ],
             },
             {
-              label: "Archieve",
+              label: "Poissons",
               icon: "pi pi-fw pi-calendar-times",
-              items: [
-                {
-                  label: "Remove",
-                  icon: "pi pi-fw pi-calendar-minus",
-                },
-              ],
+            },
+            {
+              label: "Fruits de mer",
+              icon: "pi pi-fw pi-pencil",
             },
           ],
         },
         {
           label: "Quit",
           icon: "pi pi-fw pi-power-off",
-        },
-        {
-          label: "Product Details",
-          icon: "pi pi-fw pi-info-circle",
-          command: () => {
-            this.$emit("navigate", "ProductDetails");
-          },
         },
       ],
     };
