@@ -4,7 +4,7 @@
       <template #start>
         <img
           alt="logo"
-          src="https://primefaces.org/cdn/primevue/images/logo.svg"
+          src="https://i.postimg.cc/jqP7JhJf/image.png"
           height="40"
           class="mr-2"
           href="http://localhost:8080/"
