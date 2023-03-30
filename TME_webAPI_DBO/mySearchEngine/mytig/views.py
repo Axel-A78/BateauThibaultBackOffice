@@ -62,21 +62,6 @@ class UpdateProductStock(APIView):
             return Response({"error": "Invalid parameter 'quantityInStock'"}, status=status.HTTP_400_BAD_REQUEST)
 
 #Modification de UpdatePorudctStock pour la partie 3, quand le front sera fini il faudra bien enlever les ocmmentaires 
-'''
-Nous avons ajouté deux paramètres supplémentaires : 
-stockChangePrice et stockChangeType. 
-stockChangePrice est le prix d'achat/vente associé à la modification du stock, et stockChangeType indique le type de modification (ajout, retrait par vente, retrait pour cause de péremption).
-Nous avons ajouté une condition pour vérifier si le type de modification est valide 
-(on autorise seulement "add", "remove_sell" ou "remove_perished").
-Nous avons modifié le calcul du nouveau stock en fonction du type de modification :
-Si le type est "add", on calcule le nouveau coût total de stockage (stock_cost) en ajoutant le coût du stock 
-nouvellement acheté (stock_change_price * int(quantityInStock)) au coût actuel de stockage, et on met à jour la quantité de stock (quantityInStock) en y ajoutant la quantité nouvellement achetée.
-Si le type est "remove_sell", on met à jour la quantité de stock en la réduisant de la quantité vendue (int(quantityInStock)), et on ne change pas le coût total de stockage.
-Si le type est "remove_perished", on met à jour la quantité de stock en la réduisant de la quantité de produits périmés, 
-et on met à jour la date de péremption pour tous les produits de la liste products_perished.
-Enfin, pour tous les types de modification, on crée un objet StockModification 
-pour enregistrer la modification dans la base de données.
-'''
 
 '''
 class UpdateProductStock(APIView):
@@ -168,11 +153,6 @@ class UpdateMultipleProductStocks(APIView):
         products_data = request.data
 
         for product_data in products_data:
-            '''
-            Ce if vérifie si la clé 'id' et la clé 'quantityInStock' sont présentes dans le dictionnaire product_data. Si l'une ou l'autre de ces clés est absente, cela signifie que les données fournies pour la mise à jour du stock sont invalides. Par conséquent, la condition retournera True et la réponse renvoyée sera une erreur 400 Bad Request.
-
-            La fonction all() prend un itérable (ici, un objet dict en tant que dictionnaire de données du produit) et retourne True si tous les éléments sont True, sinon False. Dans ce cas, cela signifie que la condition retournera True si toutes les clés 'id' et 'quantityInStock' sont présentes dans le dictionnaire product_data.
-            '''
             if not all(k in product_data for k in ('id', 'quantityInStock')):
                 return Response({"error": "Invalid product data"}, status=HTTP_400_BAD_REQUEST)
 

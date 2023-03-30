@@ -14,8 +14,12 @@
       <div>
         <label for="stock-change">Changer le stock :</label>
         <input type="number" id="stock-change" v-model.number="stockChange" />
-        <button @click="addStock">Ajouter</button>
-        <button @click="removeStock">Enlever</button>
+        <button @click="addStock" style="margin-right: 10px; margin-top: 10px">
+          Ajouter article(s)
+        </button>
+        <button @click="removeStock" style="margin-top: 10px">
+          Supprimer article(s)
+        </button>
         <p v-if="errorMessage">{{ errorMessage }}</p>
       </div>
       <h2>{{ selectedProduct.name }}</h2>
@@ -29,6 +33,24 @@
       <p>Quantité en stock: {{ selectedProduct.quantityInStock }}</p>
       <p>Nombre d'articles vendus: {{ selectedProduct.sold_count }}</p>
       <p>Commentaires: {{ selectedProduct.comments }}</p>
+      <div>
+        <label for="sale-percentage"
+          >Modifier le pourcentage de promotion :</label
+        >
+        <input
+          type="number"
+          id="sale-percentage"
+          v-model.number="salePercentage"
+        />
+        %
+        <button
+          @click="updateSalePercentage"
+          style="margin-right: 10px; margin-top: 10px"
+        >
+          Mettre à jour promotion
+        </button>
+        <div v-if="errorMessage">{{ errorMessage }}</div>
+      </div>
     </div>
   </div>
 </template>
@@ -89,8 +111,9 @@ export default defineComponent({
     const store = useStore();
     const selectedProduct = ref<Product | null>(null);
     const products = ref<Product[]>([]);
-    const stockChange = ref(0);
-    const errorMessage = ref("");
+    const salePercentage = ref<number>(0);
+    const stockChange = ref<number>(0);
+    const errorMessage = ref<string>("");
 
     store.dispatch("fetchProducts");
 
@@ -107,29 +130,62 @@ export default defineComponent({
 
     function addStock() {
       if (!selectedProduct.value) return;
-      if (stockChange.value < 1) {
+      const parsedStockChange = parseInt(stockChange.value.toString());
+      const product = selectedProduct.value;
+      if (isNaN(parsedStockChange) || parsedStockChange < 1) {
         errorMessage.value = "Veuillez entrer un nombre positif.";
+      } else if (product.quantityInStock + parsedStockChange > 1000) {
+        errorMessage.value = "Le stock maximal est atteint.";
       } else {
         // Appelez l'action Vuex pour ajouter des articles au stock
         store.dispatch("updateQuantityInStock", {
-          productId: selectedProduct.value.id,
-          stockChange: stockChange.value,
+          productId: product.id,
+          stockChange: parsedStockChange,
         });
+        product.quantityInStock = Math.min(
+          product.quantityInStock + parsedStockChange,
+          1000
+        );
+        selectedProduct.value = { ...product }; // mise à jour de l'objet réactif
         errorMessage.value = "";
       }
     }
+
     function removeStock() {
       if (!selectedProduct.value) return;
-      if (
-        stockChange.value < 1 ||
-        stockChange.value > selectedProduct.value.quantityInStock
-      ) {
-        errorMessage.value = "Veuillez entrer un nombre valide.";
+      const parsedStockChange = -parseInt(stockChange.value.toString());
+      const product = selectedProduct.value;
+      if (isNaN(parsedStockChange) || parsedStockChange > 1) {
+        errorMessage.value = "Veuillez entrer un nombre negatif.";
+      } else if (product.quantityInStock + parsedStockChange < 0) {
+        errorMessage.value = "Le stock minimal est 0.";
       } else {
-        // Appelez l'action Vuex pour enlever des articles du stock
+        // Appelez l'action Vuex pour ajouter des articles au stock
         store.dispatch("updateQuantityInStock", {
+          productId: product.id,
+          stockChange: parsedStockChange,
+        });
+        product.quantityInStock = Math.min(
+          product.quantityInStock + parsedStockChange
+        );
+        selectedProduct.value = { ...product }; // mise à jour de l'objet réactif
+        errorMessage.value = "";
+      }
+    }
+    function updateSalePercentage() {
+      if (!selectedProduct.value) return;
+      const parsedSalePercentage = parseInt(salePercentage.value.toString());
+      if (
+        isNaN(parsedSalePercentage) ||
+        parsedSalePercentage < 0 ||
+        parsedSalePercentage > 100
+      ) {
+        errorMessage.value = "Veuillez entrer un pourcentage entre 0 et 100.";
+      } else {
+        // Appelez l'action Vuex pour mettre à jour le pourcentage de promotion
+        store.dispatch("updateSalePercentage", {
           productId: selectedProduct.value.id,
-          stockChange: -stockChange.value,
+          salePercentage: parsedSalePercentage,
         });
         errorMessage.value = "";
       }
@@ -140,6 +196,8 @@ export default defineComponent({
       selectedProduct,
       displaySelectedProduct,
       stockChange,
+      salePercentage,
+      updateSalePercentage,
       errorMessage,
       addStock,
       removeStock,

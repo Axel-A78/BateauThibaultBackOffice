@@ -21,6 +21,11 @@ interface StockUpdatePayload {
   stockChange: number;
 }
 
+interface SaleUpdatePayload {
+  productId: number;
+  salePercentage: number;
+}
+
 export default createStore<RootState>({
   modules: {
     auth,
@@ -37,6 +42,21 @@ export default createStore<RootState>({
       const product = state.products.find((p) => p.id === productId);
       if (product) {
         product.quantityInStock = newQuantityInStock;
+      }
+    },
+    updateSalePercentage(
+      state,
+      payload: { productId: number; newSalePercentage: number }
+    ) {
+      const productIndex = state.products.findIndex(
+        (p) => p.id === payload.productId
+      );
+      if (productIndex !== -1) {
+        state.products[productIndex].promotion_percentage =
+          payload.newSalePercentage;
+        state.products[productIndex].price_on_sale =
+          state.products[productIndex].price *
+          (1 - payload.newSalePercentage / 100);
       }
     },
   },
@@ -58,7 +78,14 @@ export default createStore<RootState>({
 
       if (product) {
         const newQuantityInStock = product.quantityInStock + stockChange;
-
+        console.log(
+          "New quantity :",
+          newQuantityInStock,
+          "Produit de quantité dans la table : ",
+          product.quantityInStock,
+          "Stockchange:",
+          stockChange
+        );
         // Envoyer une requête PATCH au backend
         const response = await fetch(
           `http://127.0.0.1:8000/update_product_stock/${productId}/`,
@@ -68,19 +95,69 @@ export default createStore<RootState>({
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
+
             body: JSON.stringify({ quantityInStock: newQuantityInStock }),
           }
         );
 
         if (response.ok) {
           const updatedProduct = await response.json();
+          console.log("Produit msie à jour après requete : " + updatedProduct);
           commit("updateQuantityStock", {
             productId,
             newQuantityInStock: updatedProduct.quantityInStock,
           });
+          product.quantityInStock = updatedProduct.quantityInStock;
         } else {
           const error = await response.json();
           console.error("Error updating product stock:", error);
+        }
+      }
+    },
+
+    async updateSalePercentage(
+      context: ActionContext<RootState, RootState>,
+      payload: SaleUpdatePayload
+    ) {
+      const { commit, state, rootGetters } = context;
+      const { productId, salePercentage } = payload;
+      const token = rootGetters["auth/getToken"];
+
+      if (!token) {
+        console.error("Accès refusé. Veuillez vous connecter.");
+        return;
+      }
+
+      const product = state.products.find((p: Product) => p.id === productId);
+
+      if (product) {
+        const newSalePercentage = parseInt(salePercentage.toString());
+        console.log(newSalePercentage);
+        // Envoyer une requête PUT au backend
+        const response = await fetch(
+          `http://localhost:8000/update_sale_percentage/${productId}/`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              sale: true,
+              discount: newSalePercentage,
+            }),
+          }
+        );
+
+        if (response.ok) {
+          const updatedProduct = await response.json();
+          commit("updateSalePercentage", {
+            productId,
+            newSalePercentage: updatedProduct.sale_percentage,
+          });
+        } else {
+          const error = await response.json();
+          console.error("Error updating product sale percentage:", error);
         }
       }
     },
