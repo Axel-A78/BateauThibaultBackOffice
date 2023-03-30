@@ -1,0 +1,24 @@
+{
+  "group": [
+    {
+      "name": "abbioui"
+      "firstname": "khalil"
+    },
+    {
+      "name": "achy"
+      "firstname": "axel"
+    },
+    {
+      "name": "barnet"
+      "firstname": "eric"
+    },
+    {
+      "name": "moumen"
+      "firstname": "anas"
+    },
+  ],
+  "project": {
+    "frontend": "mettre_le_lien_du_front",
+    "backend": "mettre_le_lien_du_back",
+  }
+}
