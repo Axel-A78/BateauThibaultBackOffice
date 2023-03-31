@@ -18,7 +18,7 @@
     },
   ],
   "project": {
-    "frontend": "mettre_le_lien_du_front",
-    "backend": "mettre_le_lien_du_back",
+    "frontend": "TBA",
+    "backend": "https://python-drf-backend.onrender.com",
   }
 }
